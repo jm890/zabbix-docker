@@ -1,4 +1,4 @@
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 LABEL maintainer "Alexey Pustovalov <alexey.pustovalov@zabbix.com>"
 
 ARG APT_FLAGS_COMMON="-qq -y"
@@ -7,6 +7,11 @@ ARG APT_FLAGS_DEV="${APT_FLAGS_COMMON} --no-install-recommends"
 ARG DB_TYPE=mysql
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive TERM=xterm
 ENV MIBDIRS=/usr/share/mibs/iana:/usr/share/mibs/ietf:/usr/share/snmp/mibs:/var/lib/zabbix/mibs MIBS=+ALL
+
+RUN apt-get ${APT_GET_FLAGS_COMMON} update && \
+    apt-get ${APT_FLAGS_PERSISTANT} install \
+            locales \
+            apt-utils 
 
 RUN locale-gen $LC_ALL && \
     echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
@@ -38,7 +43,7 @@ RUN locale-gen $LC_ALL && \
             supervisor \
             snmp-mibs-downloader \
             mysql-client \
-            libmysqlclient18 \
+            libmysqlclient20 \
             libiksemel3 \
             libsnmp30 \
             libcurl3 \
@@ -46,6 +51,8 @@ RUN locale-gen $LC_ALL && \
             libssh2-1 \
             libssl1.0.0 \
             libxml2 \
+            libevent-2.0 \
+            libpcre3 \
             fping \
             libopenipmi0 1>/dev/null && \
     apt-get ${APT_FLAGS_COMMON} autoremove && \

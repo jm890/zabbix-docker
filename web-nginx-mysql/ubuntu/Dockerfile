@@ -1,4 +1,4 @@
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 LABEL maintainer "Alexey Pustovalov <alexey.pustovalov@zabbix.com>"
 
 ARG APT_FLAGS_COMMON="-qq -y"
@@ -6,6 +6,11 @@ ARG APT_FLAGS_PERSISTANT="${APT_FLAGS_COMMON} --no-install-recommends"
 ARG APT_FLAGS_DEV="${APT_FLAGS_COMMON} --no-install-recommends"
 ARG DB_TYPE=mysql
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8 DEBIAN_FRONTEND=noninteractive TERM=xterm
+
+RUN apt-get ${APT_FLAGS_COMMON} update && \
+    apt-get ${APT_FLAGS_PERSISTANT} install \
+            locales \
+            apt-utils 
 
 RUN DISTRIB_CODENAME=$(/bin/bash -c 'source /etc/lsb-release && echo $DISTRIB_CODENAME') && \
     locale-gen $LC_ALL && \
@@ -31,16 +36,19 @@ RUN DISTRIB_CODENAME=$(/bin/bash -c 'source /etc/lsb-release && echo $DISTRIB_CO
             supervisor \
             mysql-client \
             nginx \
-            php5-fpm \
-            php5-mysql \
-            php5-gd \
-            php5-json \
-            php5-ldap \
+            php-fpm \
+            php-mysql \
+            php-gd \
+            php-json \
+            php-ldap \
+            php-bcmath \
+            php-mbstring \
+            php-xml \
             ttf-dejavu-core 1>/dev/null && \
     apt-get ${APT_FLAGS_COMMON} autoremove && \
     apt-get ${APT_FLAGS_COMMON} clean && \
-    mkdir -p /var/lib/php5 && \
-    chown --quiet -R www-data:www-data /var/lib/php5 && \
+    mkdir -p /var/lib/php && \
+    chown --quiet -R www-data:www-data /var/lib/php && \
     rm -rf /var/cache/nginx/* && \
     rm -rf /var/lib/apt/lists/*
 
@@ -100,7 +108,7 @@ ADD conf/etc/zabbix/nginx.conf /etc/zabbix/
 ADD conf/etc/zabbix/nginx_ssl.conf /etc/zabbix/
 ADD conf/etc/zabbix/web/zabbix.conf.php /etc/zabbix/web/
 ADD conf/etc/nginx/nginx.conf /etc/nginx/
-ADD conf/etc/php5/fpm/conf.d/99-zabbix.ini /etc/php5/fpm/conf.d/
+ADD conf/etc/php5/fpm/conf.d/99-zabbix.ini /etc/php/7.0/fpm/conf.d/
 ADD run_zabbix_component.sh /
 
 ENTRYPOINT ["/bin/bash"]
